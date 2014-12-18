@@ -8,7 +8,28 @@
 ## of the example code makeVector.
 ## We will provide setters and getters for the matrix data and
 ## a cached call to its ivnerse. 
-
+##
+## Usage:
+##
+##  Create matrix 
+##
+##      [,1] [,2]
+##[1,]    1    3
+##[2,]    2    4
+## 
+##        x<-makeCacheMatrix(matrix(c(1, 2, 3, 4), nrow=2, ncol=2))
+##        
+##        cacheSolve(x)
+##              [,1] [,2]
+##        [1,]   -2  1.5
+##        [2,]    1 -0.5
+##        
+##        cacheSolve(x)
+##        Cached
+##              [,1] [,2]
+##        [1,]   -2  1.5
+##        [2,]    1 -0.5
+##
 ##
 ## Function makeCacheMatrix(x) takes as input a matrix x and
 ## create a list of objects that describe the wrapper object 
@@ -28,40 +49,71 @@
 makeCacheMatrix <- function(x = matrix()) {
   invX <- NULL
   
+  #
+  # Stores the arguments in parnt evniroment
   set <- function(y){
+    #
+    # Checks if the existing matrix and the new one are identical.
+    ## If not then update the contents of the matrix and its inverse
     if (!identical(x, y)){
       x    <<- y
       invX <<- NULL
     }
   }
   
+  ##
+  ## Get matrix 
   get <- function() {
     x
   }
   
+  ##
+  ## Get inverse matrix
   getinverse <- function() {
       invX
   }
   
+  #
+  # Set inverse matrix in parent environment
   setinverse <- function(inv) {
     invX <<- inv
   }
   
+  #
+  # A list of 4 setter/getter functions
   list (set=set, get=get, getinverse=getinverse, setinverse=setinverse)
 }
 
 
-## Write a short comment describing this function
+## This function uses a `makeCacheMatrix` object x and returns
+## its inverse. If the inverse already exists from previous cals
+## makeCacheMatrix() returns it. If not it calculates the inverse
+## using solve() and then uses x$setinverse() function to it back
+## to the object.
 
 cacheSolve <- function(x, ...) {
-        ## Return a matrix that is the inverse of 'x'
+  ##
+  ## Get the inverse from the argument
   invX <- x$getinverse()
+  ##
+  ## If the inerse is not null return it   
   if (!is.null(invX)){
     message("Cached")
     return (invX)
   }
+  ##
+  ## The inverse stored in the argument `x` is null
+  ## So we use the matrix stored in `x`
   data <- x$get()
+  ##
+  ## To calculate the inverse using solve() 
   invX <- solve(data, ...)
+  ##
+  ## And set it back to the object `x`, so that next
+  ## time cacheSolve is called on this object, the inverse
+  ## matrix would be available.
   x$setinverse(invX)
+  ##
+  ## Return the inverse matrix 
   invX
 }
